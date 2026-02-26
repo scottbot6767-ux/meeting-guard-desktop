@@ -79,8 +79,16 @@ async function poll() {
 
 // ── Tray icon ─────────────────────────────────────────────────────────────────
 function createTray() {
-  // Simple 16x16 colored icon — swap for a real icon file in production
-  const icon = nativeImage.createEmpty();
+  // 16x16 solid red icon built from raw BGRA bitmap — no file needed
+  const size = 16;
+  const buf = Buffer.alloc(size * size * 4);
+  for (let i = 0; i < size * size; i++) {
+    buf[i * 4 + 0] = 27;   // B
+    buf[i * 4 + 1] = 39;   // G
+    buf[i * 4 + 2] = 232;  // R  → #E8271B
+    buf[i * 4 + 3] = 255;  // A
+  }
+  const icon = nativeImage.createFromBitmap(buf, { width: size, height: size });
   tray = new Tray(icon);
   tray.setToolTip('Meeting Guard');
   updateTray({ platform: null });
@@ -94,6 +102,9 @@ function updateTray(state) {
 
   const menu = Menu.buildFromTemplate([
     { label, enabled: false },
+    { type: 'separator' },
+    { label: 'Force check now', click: () => poll() },
+    { label: 'Reload overlay', click: () => overlayWin?.webContents.reload() },
     { type: 'separator' },
     { label: 'Quit Meeting Guard', click: () => app.quit() },
   ]);
