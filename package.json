@@ -1,0 +1,29 @@
+{
+  "name": "meeting-guard-desktop",
+  "version": "1.0.0",
+  "description": "System-level overlay alerts for Zoom and Google Meet desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "electron": "^29.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.meetingguard.desktop",
+    "productName": "Meeting Guard",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
