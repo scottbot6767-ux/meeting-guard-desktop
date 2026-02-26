@@ -5,8 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win"
+    "build:mac": "electron-builder --mac --x64 --arm64"
   },
   "dependencies": {
     "electron": "^29.0.0"
@@ -17,13 +16,28 @@
   "build": {
     "appId": "com.meetingguard.desktop",
     "productName": "Meeting Guard",
+    "copyright": "Meeting Guard",
+    "files": [
+      "main.js",
+      "preload.js",
+      "overlay.html",
+      "overlay.js",
+      "detector/**/*"
+    ],
     "mac": {
       "category": "public.app-category.productivity",
-      "entitlements": "entitlements.mac.plist",
-      "entitlementsInherit": "entitlements.mac.plist"
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "assets/icon.png",
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "hardenedRuntime": false
     },
-    "win": {
-      "target": "nsis"
+    "dmg": {
+      "title": "Meeting Guard",
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
     }
   }
 }

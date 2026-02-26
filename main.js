@@ -100,8 +100,18 @@ function updateTray(state) {
     ? `Meeting Guard — ${state.platform === 'zoom' ? 'Zoom' : 'Google Meet'}`
     : 'Meeting Guard — No active meeting';
 
+  const launchAtLogin = app.getLoginItemSettings().openAtLogin;
   const menu = Menu.buildFromTemplate([
     { label, enabled: false },
+    { type: 'separator' },
+    {
+      label: 'Launch at Login',
+      type: 'checkbox',
+      checked: launchAtLogin,
+      click: (item) => {
+        app.setLoginItemSettings({ openAtLogin: item.checked, openAsHidden: true });
+      },
+    },
     { type: 'separator' },
     { label: 'Force check now', click: () => poll() },
     { label: 'Reload overlay', click: () => overlayWin?.webContents.reload() },
