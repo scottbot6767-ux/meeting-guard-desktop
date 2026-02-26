@@ -41,21 +41,28 @@ async function getZoomState() {
   //   "Start Video"  → cam is OFF
   //   "Stop Video"   → cam is ON
   //   "Stop Share"   → screen sharing is active
-  // Walk every button on window 1 and collect name + description.
-  // Zoom puts meeting controls directly on the window (no toolbar wrapper).
+  // Read Zoom's "Meeting" menu bar — much more reliable than toolbar/window scanning.
+  // Menu items change based on state:
+  //   "Mute audio"   → currently unmuted (clicking would mute)
+  //   "Unmute audio" → currently muted   (clicking would unmute)
+  //   "Start share"  → not sharing
+  //   "Stop share"   → currently sharing
+  //   "Start video"  → camera off
+  //   "Stop video"   → camera on
+  // The Meeting menu only exists when you're in an active call.
   const script = `
     tell application "System Events"
       tell process "zoom.us"
         try
-          set allText to ""
-          repeat with b in buttons of window 1
+          set output to ""
+          repeat with mi in menu items of menu "Meeting" of menu bar 1
             try
-              set allText to allText & "|" & (name of b) & "~" & (description of b)
+              set output to output & (name of mi) & "|"
             end try
           end repeat
-          return allText
-        on error e
-          return "err:" & e
+          return output
+        on error
+          return ""
         end try
       end tell
     end tell
@@ -64,18 +71,17 @@ async function getZoomState() {
   const raw = await runScript(script);
   const lower = raw.toLowerCase();
 
-  // "audio muted" in description = currently muted
-  // "audio" present at all = we're in a meeting with audio controls
-  const hasMuteControls = lower.includes('audio');
-  const muted = lower.includes('audio muted') || lower.includes('unmute audio');
-  const unmuted = lower.includes('mute audio') && !lower.includes('unmute audio');
+  // No Meeting menu = not in a call
+  if (!lower.includes('mute') && !lower.includes('share')) {
+    return { platform: 'zoom', inMeeting: false };
+  }
 
   return {
     platform: 'zoom',
-    inMeeting: hasMuteControls,
-    muted: muted && !unmuted,
-    screenSharing: lower.includes('stop share') || lower.includes('stop screen share'),
-    camOff: lower.includes('start video') || lower.includes('video muted'),
+    inMeeting: true,
+    muted: lower.includes('unmute audio'),
+    screenSharing: lower.includes('stop share'),
+    camOff: lower.includes('start video'),
     lobbyWaiting: false,
   };
 }
